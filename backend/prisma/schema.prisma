@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model historial_planes {
+  id                       Int       @id @default(autoincrement())
+  usuario_id               String?   @db.Uuid
+  ahorro_reportado_dolares Decimal?  @db.Decimal(5, 2)
+  fecha_generacion         DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+  usuarios                 usuarios? @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model ingredientes {
+  id                    Int                     @id @default(autoincrement())
+  nombre                String                  @db.VarChar(100)
+  categoria             String?                 @db.VarChar(50)
+  precios_supermercados precios_supermercados[]
+  receta_ingredientes   receta_ingredientes[]
+}
+
+model precios_supermercados {
+  id                  Int            @id @default(autoincrement())
+  ingrediente_id      Int?
+  supermercado_id     Int?
+  precio              Decimal        @db.Decimal(5, 2)
+  unidad_medida       String         @db.VarChar(20)
+  fecha_actualizacion DateTime?      @default(dbgenerated("CURRENT_DATE")) @db.Date
+  ingredientes        ingredientes?  @relation(fields: [ingrediente_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  supermercados       supermercados? @relation(fields: [supermercado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model receta_ingredientes {
+  receta_id      Int
+  ingrediente_id Int
+  cantidad       Decimal      @db.Decimal(5, 2)
+  ingredientes   ingredientes @relation(fields: [ingrediente_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  recetas        recetas      @relation(fields: [receta_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([receta_id, ingrediente_id])
+}
+
+model recetas {
+  id                     Int                   @id @default(autoincrement())
+  nombre                 String                @db.VarChar(100)
+  tipo_entrenamiento     String                @db.VarChar(50)
+  tiempo_preparacion_min Int
+  instrucciones          String?
+  receta_ingredientes    receta_ingredientes[]
+}
+
+model supermercados {
+  id                    Int                     @id @default(autoincrement())
+  nombre                String                  @db.VarChar(100)
+  ubicacion             String?
+  precios_supermercados precios_supermercados[]
+}
+
+model usuarios {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre           String             @db.VarChar(100)
+  es_premium       Boolean?           @default(false)
+  fecha_registro   DateTime?          @default(now()) @db.Timestamp(6)
+  historial_planes historial_planes[]
+}

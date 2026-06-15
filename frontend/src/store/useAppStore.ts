@@ -24,15 +24,15 @@ export const useAppStore = create<AppStore>((set) => ({
     // Esta función hace la magia de conectarse al backend
     fetchDatabase: async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/sync');
+            const response = await fetch('https://nutri-j3ph.onrender.com/api/sync');
             const result = await response.json();
 
             if (result.status === 'success') {
-                set({ dbData: result.data, isLoaded: true });
-                console.log("✅ ¡Catálogo descargado y listo para modo offline!", result.data);
+                return result.data;
             }
+
         } catch (error) {
-            console.error("❌ Error conectando al backend:", error);
+            console.error("Error fetching database:", error);
         }
-    }
+    }    
 }));
